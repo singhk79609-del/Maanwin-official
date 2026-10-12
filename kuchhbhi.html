@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0e1525">
+<title>ANMOL SINGH • maan.win WinGo Dashboard</title>
+
+<style>
+:root {
+  --bg-dark: #0b0f19;
+  --panel-bg: #141c2e;
+  --border-color: #273554;
+  --text-main: #ffffff;
+  --text-muted: #8b9bb4;
+  --orange-primary: #ff8b00;
+  --orange-gradient: linear-gradient(135deg, #ffa800, #ff6a00);
+  --win-green: #2ecc71;
+  --loss-red: #e74c3c;
+  --gold: #f1c40f;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  font: 14px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.wrap { max-width: 600px; margin: auto; padding: 14px 10px 40px; }
+
+/* Header Theme */
+.brand { text-align: center; padding: 10px 0 16px; }
+.brand .eyebrow { font-size: 10px; letter-spacing: 3px; color: var(--orange-primary); font-weight: 800; }
+.brand h1 {
+  margin: 4px 0;
+  font-size: clamp(22px, 5vw, 32px);
+  font-weight: 900;
+  letter-spacing: 1px;
+  color: #fff;
+  text-shadow: 0 0 10px rgba(255, 139, 0, 0.5);
+}
+.brand p { margin: 3px 0 0; color: var(--text-muted); font-size: 11px; letter-spacing: 1.5px; }
+
+/* Toolbar & Game Switcher */
+.toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; background: var(--panel-bg);
+  border: 1px solid var(--border-color); border-radius: 14px;
+  padding: 12px; margin-bottom: 14px;
+}
+.game-select, .refresh, .back {
+  border: 1px solid #3a4d75; border-radius: 10px;
+  background: var(--orange-gradient); color: #fff; padding: 10px 14px;
+  font-weight: 800; cursor: pointer; text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+.timerbox { text-align: right; }
+.timerbox small { display: block; color: var(--text-muted); font-size: 10px; letter-spacing: 1px; }
+.timer { font-variant-numeric: tabular-nums; font-size: 22px; font-weight: 900; color: var(--gold); }
+
+/* Panels */
+.panel {
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color); border-radius: 14px;
+  padding: 14px; margin: 12px 0; box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+}
+.panel-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
+.panel h2 { font-size: 13px; letter-spacing: 1px; margin: 0; text-transform: uppercase; color: var(--gold); }
+.pill { border: 1px solid #36486b; background: #1b263d; border-radius: 99px; padding: 4px 10px; color: #d0e1fd; font-size: 10px; font-weight: 700; }
+
+/* Balls */
+.balls { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.ball-card { text-align: center; padding: 8px 4px; background: #0f1522; border: 1px solid #222e47; border-radius: 10px; }
+.ball {
+  width: 44px; height: 44px; margin: 0 auto 6px; border-radius: 50%;
+  display: grid; place-items: center; font-size: 18px; font-weight: 900;
+  color: #fff; position: relative; border: 2px solid rgba(255,255,255,0.3);
+  box-shadow: inset -4px -4px 8px rgba(0,0,0,0.6), 0 4px 10px rgba(0,0,0,0.5);
+}
+.ball.b-green { background: radial-gradient(circle at 35% 35%, #2ecc71, #1e8449); }
+.ball.b-red { background: radial-gradient(circle at 35% 35%, #e74c3c, #922b21); }
+.ball.b-violet-red { background: linear-gradient(135deg, #e74c3c 50%, #9b59b6 50%); }
+.ball.b-violet-green { background: linear-gradient(135deg, #2ecc71 50%, #9b59b6 50%); }
+
+.ball-num { font-weight: 850; font-size: 12px; }
+
+/* Tabs */
+.tabs { display: flex; gap: 8px; margin: 16px 0 10px; }
+.tab {
+  flex: 1; padding: 11px; border: 1px solid var(--border-color); border-radius: 10px;
+  background: #111726; color: var(--text-muted); font-weight: 800; cursor: pointer; text-align: center;
+}
+.tab.active {
+  color: #fff; border-color: var(--orange-primary);
+  background: var(--orange-gradient);
+  box-shadow: 0 0 15px rgba(255, 139, 0, 0.3);
+}
+
+.pending { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; }
+.pending strong { display: block; font-size: 18px; color: var(--gold); word-break: break-all; }
+.signal { padding: 8px 12px; border-radius: 8px; background: #1b263d; border: 1px solid #36486b; font-weight: 900; }
+.signal.big { color: #ffa800; }
+.signal.small { color: #2ecc71; }
+
+/* Tables */
+.table-wrap { overflow-y: auto; border: 1px solid var(--border-color); border-radius: 10px; max-height: 650px; }
+table { border-collapse: collapse; width: 100%; min-width: 320px; font-size: 12px; }
+th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #1f2b44; }
+th { background: #182238; color: var(--gold); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; position: sticky; top: 0; z-index: 2; }
+tr:last-child td { border-bottom: 0; }
+
+.size-big { color: #ffa800; font-weight: 850; }
+.size-small { color: #2ecc71; font-weight: 850; }
+
+/* Color Dots Styling */
+.color-dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 4px;
+  box-shadow: 0 0 6px rgba(0,0,0,0.5);
+}
+.dot-red { background-color: #e74c3c; }
+.dot-green { background-color: #2ecc71; }
+.dot-violet { background-color: #9b59b6; }
+
+/* Predictors Grid */
+.predictors { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.predictor {
+  background: #0f1522; border: 1px solid var(--border-color); border-radius: 12px;
+  padding: 12px; cursor: pointer; text-align: left; color: inherit; width: 100%;
+}
+.predictor:hover { border-color: var(--orange-primary); }
+.predictor-top { display: flex; justify-content: space-between; gap: 6px; align-items: center; }
+.predictor-name { font-weight: 900; color: #fff; }
+.accuracy { font-size: 11px; color: var(--gold); font-weight: 800; }
+.predictor-bottom { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+.mini-signal { font-size: 11px; font-weight: 900; border-radius: 6px; padding: 4px 8px; background: #1b263d; }
+
+.detail-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 12px 0; }
+.stat { padding: 10px 8px; background: #0f1522; border: 1px solid var(--border-color); border-radius: 10px; text-align: center; }
+.stat small { display: block; color: var(--text-muted); font-size: 9px; }
+.stat strong { font-size: 16px; color: var(--gold); }
+
+.status { display: inline-block; font-size: 10px; font-weight: 900; border-radius: 6px; padding: 4px 7px; }
+.win { background: #145a32; color: #2ecc71; }
+.loss { background: #78281f; color: #e74c3c; }
+.pending-status { background: #7d6608; color: #f1c40f; }
+.note { font-size: 11px; color: var(--text-muted); line-height: 1.5; }
+.empty { text-align: center; padding: 20px; color: var(--text-muted); }
+.hidden { display: none !important; }
+.footer { text-align: center; color: var(--text-muted); font-size: 10px; padding: 16px 0; }
+
+/* Modal */
+.modal-backdrop {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: grid;
+  place-items: center; padding: 20px; z-index: 10;
+}
+.modal { width: min(320px, 100%); background: var(--panel-bg); border: 1px solid var(--orange-primary); border-radius: 16px; padding: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.6); }
+.modal h3 { margin: 0 0 12px; color: var(--gold); text-align: center; }
+.duration-option {
+  display: block; width: 100%; text-align: left; margin: 7px 0;
+  border: 1px solid var(--border-color); background: #0f1522; color: #fff;
+  border-radius: 10px; padding: 11px; font-weight: 700; cursor: pointer;
+}
+.duration-option:hover { border-color: var(--orange-primary); background: #1b263d; }
+
+@media(min-width: 720px) {
+  .predictors { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media(max-width: 430px) {
+  .balls { gap: 5px; }
+  .ball { width: 40px; height: 40px; font-size: 15px; }
+  .predictors { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+  <header class="brand">
+    <div class="eyebrow">maan.win PREDICTOR SYSTEM</div>
+    <h1>POWERED BY ANMOL SINGH</h1>
+    <p>LIVE API SYNC • 10 AI PREDICTORS</p>
+  </header>
+
+  <section class="toolbar">
+    <button id="gamePicker" class="game-select">WinGo 30sec ▾</button>
+    <div class="timerbox">
+      <small>TIME REMAINING</small>
+      <div id="timer" class="timer">00:30</div>
+    </div>
+    <button id="refreshBtn" class="refresh">↻ Sync</button>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Latest 5 Results</h2>
+      <span id="liveStatus" class="pill">CONNECTING…</span>
+    </div>
+    <div id="topBalls" class="balls">
+      <div class="empty" style="grid-column:1/-1">Live data load ho raha hai...</div>
+    </div>
+  </section>
+
+  <nav class="tabs">
+    <button class="tab active" data-tab="draws">Draws</button>
+    <button class="tab" data-tab="plans">Plans / AI</button>
+  </nav>
+
+  <main>
+    <section id="drawsView">
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Pending Period</h2>
+          <span class="pill">LIVE</span>
+        </div>
+        <div class="pending">
+          <div>
+            <small class="text-muted">Upcoming active period</small>
+            <strong id="pendingPeriod">—</strong>
+            <div class="note">Server se real-time agla active period fetch ho raha hai.</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Draw History (10 Results)</h2>
+          <span id="drawCount" class="pill">10 / 10</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Period</th><th>Number</th><th>Size</th><th>Colour</th></tr>
+            </thead>
+            <tbody id="drawRows">
+              <tr><td colspan="4" class="empty">Waiting for server data...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+
+    <section id="plansView" class="hidden">
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Top 10 AI Predictors</h2>
+          <span class="pill">AUTO-RANKED</span>
+        </div>
+        <p class="note">Jis predictor ka win percentage zyada hoga woh automatically top par rank karega.</p>
+        <div id="predictorList" class="predictors"></div>
+      </section>
+    </section>
+
+    <section id="detailView" class="hidden">
+      <section class="panel">
+        <div class="detail-head">
+          <h2 id="detailTitle">Predictor Detail</h2>
+          <button id="backBtn" class="back">← Back</button>
+        </div>
+
+        <div class="stats">
+          <div class="stat">
+            <small>ACCURACY</small>
+            <strong id="detailAccuracy">0%</strong>
+          </div>
+          <div class="stat">
+            <small>TOTAL WINS</small>
+            <strong id="detailWins">0</strong>
+          </div>
+          <div class="stat">
+            <small>NEXT SIGNAL</small>
+            <strong id="detailSignal">—</strong>
+          </div>
+        </div>
+
+        <div class="panel-head">
+          <h2>Pending Prediction</h2>
+          <span class="status pending-status">PENDING</span>
+        </div>
+
+        <div class="pending">
+          <div>
+            <small class="text-muted">Period</small>
+            <strong id="detailPeriod">—</strong>
+            <div class="note">Live server verification active.</div>
+          </div>
+          <div id="detailSignalPill" class="signal">—</div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Last 10 Results Log</h2>
+          <span class="pill">SERVER VERIFIED</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Period</th><th>Prediction</th><th>Actual</th><th>Status</th></tr>
+            </thead>
+            <tbody id="detailRows">
+              <tr><td colspan="4" class="empty">No history logs yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <div class="footer">ANMOL SINGH • maan.win Official Theme & Ball Design</div>
+</div>
+
+<div id="modalBackdrop" class="modal-backdrop hidden">
+  <div class="modal">
+    <h3>Select WinGo Game</h3>
+    <button class="duration-option" data-game="WinGo_30S" data-label="WinGo 30sec">WinGo 30sec</button>
+    <button class="duration-option" data-game="WinGo_1M" data-label="WinGo 1 Min">WinGo 1 Min</button>
+    <button class="duration-option" data-game="WinGo_3M" data-label="WinGo 3 Min">WinGo 3 Min</button>
+    <button class="duration-option" data-game="WinGo_5M" data-label="WinGo 5 Min">WinGo 5 Min</button>
+    <button id="closeModal" class="back" style="width:100%;margin-top:10px">Cancel</button>
+  </div>
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  const API_BASE = "https://draw.ar-lottery01.com/WinGo/";
+  const GAME_MS = { WinGo_30S: 30000, WinGo_1M: 60000, WinGo_3M: 180000, WinGo_5M: 300000 };
+
+  const PREDICTORS = [
+    { name: "Rahul", mode: "trend" },
+    { name: "Satyam", mode: "opposite" },
+    { name: "Aman", mode: "trend" },
+    { name: "Rohit", mode: "alternate" },
+    { name: "Priya", mode: "trend" },
+    { name: "Ankit", mode: "opposite" },
+    { name: "Neha", mode: "alternate" },
+    { name: "Vikash", mode: "trend" },
+    { name: "Arjun", mode: "opposite" },
+    { name: "Karan", mode: "trend" }
+  ];
+
+  let currentGameType = "WinGo_30S";
+  let live100Data = [];
+  let selectedPredictor = null;
+  let activeTab = "draws";
+  let requestInProgress = false;
+  let lastProcessedPeriod = null;
+
+  let gamePredictorHistories = {
+    WinGo_30S: null,
+    WinGo_1M: null,
+    WinGo_3M: null,
+    WinGo_5M: null
+  };
+
+  const $ = id => document.getElementById(id);
+  const esc = str => String(str ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+
+  function getNumber(row) {
+    const n = Number(row?.number ?? row?.result);
+    return Number.isInteger(n) && n >= 0 && n <= 9 ? n : null;
+  }
+
+  function getIssue(row) {
+    return String(row?.issueNumber ?? row?.issue ?? row?.period ?? "—");
+  }
+
+  function sizeOf(n) {
+    return n === null ? "—" : n >= 5 ? "BIG" : "SMALL";
+  }
+
+  function getBallClass(n) {
+    if (n === 0) return "b-violet-red";
+    if (n === 5) return "b-violet-green";
+    if ([1,3,7,9].includes(n)) return "b-green";
+    return "b-red";
+  }
+
+  function getColourHTML(n) {
+    if (n === null) return "—";
+    if (n === 0) return '<span class="color-dot dot-red"></span><span class="color-dot dot-violet"></span>';
+    if (n === 5) return '<span class="color-dot dot-green"></span><span class="color-dot dot-violet"></span>';
+    if ([2,4,6,8].includes(n)) return '<span class="color-dot dot-red"></span>';
+    return '<span class="color-dot dot-green"></span>';
+  }
+
+  function periodSort(a, b) {
+    const issueA = getIssue(a);
+    const issueB = getIssue(b);
+    try {
+      return Number(BigInt(issueB) - BigInt(issueA));
+    } catch {
+      return Number(issueB) - Number(issueA);
+    }
+  }
+
+  function setStatus(ok, text) {
+    $("liveStatus").textContent = text;
+    $("liveStatus").style.color = ok ? "#2ecc71" : "#e74c3c";
+  }
+
+  function getCurrentPredictorHistory() {
+    if (!gamePredictorHistories[currentGameType]) {
+      gamePredictorHistories[currentGameType] = Object.fromEntries(PREDICTORS.map(p => [p.name, []]));
+    }
+    return gamePredictorHistories[currentGameType];
+  }
+
+  async function fetchLiveGameData() {
+    if (requestInProgress) return;
+    requestInProgress = true;
+
+    try {
+      const url = `${API_BASE}${currentGameType}/GetHistoryIssuePage.json?pageSize=100&pageNo=1&t=${Date.now()}`;
+      const res = await fetch(url, { cache: "no-store" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      const json = await res.json();
+      const list = json?.data?.list;
+      if (!Array.isArray(list) || list.length === 0) throw new Error("Empty list");
+
+      live100Data = list.slice().sort(periodSort);
+      
+      const latestResultRow = live100Data[0];
+      const latestPeriod = getIssue(latestResultRow);
+
+      if (latestPeriod && latestPeriod !== lastProcessedPeriod) {
+        lastProcessedPeriod = latestPeriod;
+        settlePredictors(latestResultRow);
+      }
+
+      ensurePendingPredictions();
+      renderAll();
+      setStatus(true, "LIVE • SYNCED");
+    } catch (err) {
+      console.warn("API warning/offline:", err);
+      setStatus(false, "API OFFLINE");
+    } finally {
+      requestInProgress = false;
+    }
+  }
+
+  function nextPeriod() {
+    if (!Array.isArray(live100Data) || !live100Data.length) return "—";
+    const currentStr = getIssue(live100Data[0]);
+    try {
+      const nextVal = BigInt(currentStr) + 1n;
+      return String(nextVal);
+    } catch {
+      const current = Number(currentStr);
+      return isNaN(current) ? "—" : String(current + 1);
+    }
+  }
+
+  function getPrediction(issueNum, mode, list) {
+    const targetStr = String(issueNum);
+    let prevIssueStr = "";
+    try {
+      prevIssueStr = String(BigInt(targetStr) - 1n);
+    } catch {
+      prevIssueStr = String(Number(targetStr) - 1);
+    }
+
+    const past = Array.isArray(list) ? list.find(x => getIssue(x) === prevIssueStr) : null;
+    const lastNum = getNumber(past);
+    const lastSize = lastNum !== null ? (lastNum >= 5 ? "BIG" : "SMALL") : "BIG";
+
+    if (mode === "trend") return lastSize;
+    if (mode === "opposite") return lastSize === "BIG" ? "SMALL" : "BIG";
+    
+    try {
+      return Number(BigInt(targetStr) % 2n) === 0 ? "BIG" : "SMALL";
+    } catch {
+      return Number(targetStr) % 2 === 0 ? "BIG" : "SMALL";
+    }
+  }
+
+  function settlePredictors(resultRow) {
+    const period = getIssue(resultRow);
+    const actualSize = sizeOf(getNumber(resultRow));
+    const predictorHistory = getCurrentPredictorHistory();
+
+    for (const p of PREDICTORS) {
+      let logs = predictorHistory[p.name] || [];
+      let pendingLog = logs.find(l => l.period === period && l.status === "PENDING");
+      if (pendingLog) {
+        pendingLog.actual = actualSize;
+        pendingLog.status = (pendingLog.prediction === actualSize) ? "WIN" : "LOSS";
+      } else {
+        const pred = getPrediction(period, p.mode, live100Data);
+        logs.push({
+          period: period,
+          prediction: pred,
+          actual: actualSize,
+          status: (pred === actualSize) ? "WIN" : "LOSS"
+        });
+      }
+      if (logs.length > 50) logs.shift();
+    }
+  }
+
+  function ensurePendingPredictions() {
+    const nextP = nextPeriod();
+    if (nextP === "—") return;
+    const predictorHistory = getCurrentPredictorHistory();
+
+    for (const p of PREDICTORS) {
+      let logs = predictorHistory[p.name] || [];
+      if (!logs.some(l => l.period === nextP)) {
+        const pred = getPrediction(nextP, p.mode, live100Data);
+        logs.push({
+          period: nextP,
+          prediction: pred,
+          actual: null,
+          status: "PENDING"
+        });
+        if (logs.length > 50) logs.shift();
+      }
+    }
+  }
+
+  function getPredictorStats(predictorName) {
+    const predictorHistory = getCurrentPredictorHistory();
+    const logs = predictorHistory[predictorName] || [];
+    const settled = logs.filter(l => l.status === "WIN" || l.status === "LOSS");
+    const wins = settled.filter(l => l.status === "WIN").length;
+    const accuracy = settled.length > 0 ? Math.round((wins / settled.length) * 100) : 0;
+    
+    return { accuracy, wins, logs: logs.slice().filter(l => l.status !== "PENDING").reverse().slice(0, 10) };
+  }
+
+  function renderBalls() {
+    if (!Array.isArray(live100Data) || !live100Data.length) return;
+    const rows = live100Data.slice(0, 5);
+
+    $("topBalls").innerHTML = rows.map(row => {
+      const n = getNumber(row);
+      const cls = getBallClass(n);
+      const size = sizeOf(n);
+      return `
+        <div class="ball-card">
+          <div class="ball ${cls}">${n === null ? "?" : esc(n)}</div>
+          <div class="ball-num ${size==="BIG"?"size-big":"size-small"}">${esc(size)}</div>
+        </div>`;
+    }).join("");
+  }
+
+  function renderDraws() {
+    const rows = live100Data;
+    $("drawCount").textContent = "10 / 10";
+
+    $("drawRows").innerHTML = rows.length ? rows.map(row => {
+      const n = getNumber(row);
+      const size = sizeOf(n);
+      const fullIssue = getIssue(row);
+      const shortIssue = "*" + fullIssue.slice(-5);
+
+      return `
+        <tr>
+          <td>${esc(shortIssue)}</td>
+          <td>${n !== null ? n : "—"}</td>
+          <td class="${size==="BIG"?"size-big":"size-small"}">${esc(size)}</td>
+          <td>${getColourHTML(n)}</td>
+        </tr>`;
+    }).join("") : '<tr><td colspan="4" class="empty">No records found.</td></tr>';
+  }
+
+  function renderPending() {
+    $("pendingPeriod").textContent = nextPeriod();
+  }
+
+  function renderPlans() {
+    const nextP = nextPeriod();
+    const shortNextP = nextP !== "—" ? "*" + nextP.slice(-5) : "—";
+    
+    const evaluated = PREDICTORS.map(p => {
+      const stats = getPredictorStats(p.name);
+      const signal = getPrediction(nextP, p.mode, live100Data);
+      return { ...p, accuracy: stats.accuracy, signal };
+    });
+
+    evaluated.sort((a, b) => b.accuracy - a.accuracy);
+
+    $("predictorList").innerHTML = evaluated.map((p, i) => `
+      <button class="predictor" data-predictor="${esc(p.name)}">
+        <div class="predictor-top">
+          <span class="predictor-name">${i+1}. ${esc(p.name)}</span>
+          <span class="accuracy">${p.accuracy}% ACCURACY</span>
+        </div>
+        <div class="predictor-bottom">
+          <span class="text-muted" style="font-size:11px">Next: #${esc(shortNextP)}</span>
+          <span class="mini-signal ${p.signal==="BIG"?"size-big":"size-small"}">${esc(p.signal)}</span>
+        </div>
+      </button>
+    `).join("");
+
+    document.querySelectorAll("[data-predictor]").forEach(btn => {
+      btn.addEventListener("click", () => openPredictor(btn.dataset.predictor));
+    });
+  }
+
+  function openPredictor(name) {
+    selectedPredictor = PREDICTORS.find(p => p.name === name);
+    activeTab = "detail";
+
+    $("drawsView").classList.add("hidden");
+    $("plansView").classList.add("hidden");
+    $("detailView").classList.remove("hidden");
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    renderDetail();
+  }
+
+  function renderDetail() {
+    if (!selectedPredictor) return;
+    const p = selectedPredictor;
+    const stats = getPredictorStats(p.name);
+    const nextP = nextPeriod();
+    const nextSignal = getPrediction(nextP, p.mode, live100Data);
+
+    $("detailTitle").textContent = p.name;
+    $("detailAccuracy").textContent = stats.accuracy + "%";
+    $("detailWins").textContent = stats.wins;
+    $("detailSignal").textContent = nextSignal;
+    $("detailPeriod").textContent = nextP;
+    $("detailSignalPill").textContent = nextSignal;
+    $("detailSignalPill").className = "signal " + (nextSignal === "BIG" ? "big" : "small");
+
+    $("detailRows").innerHTML = stats.logs.length ? stats.logs.map(x => `
+      <tr>
+        <td>*${esc(x.period.slice(-5))}</td>
+        <td>${esc(x.prediction)}</td>
+        <td>${esc(x.actual ?? "—")}</td>
+        <td><span class="status ${x.status === "WIN" ? "win" : "loss"}">${x.status}</span></td>
+      </tr>
+    `).join("") : '<tr><td colspan="4" class="empty">No history logs yet.</td></tr>';
+  }
+
+  function renderAll() {
+    renderBalls();
+    renderDraws();
+    renderPending();
+    renderPlans();
+    if (selectedPredictor && activeTab === "detail") renderDetail();
+  }
+
+  function setTab(tab) {
+    activeTab = tab;
+    $("drawsView").classList.toggle("hidden", tab !== "draws");
+    $("plansView").classList.toggle("hidden", tab !== "plans");
+    $("detailView").classList.add("hidden");
+    document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.tab === tab));
+  }
+
+  document.querySelectorAll(".tab").forEach(t => {
+    t.addEventListener("click", () => setTab(t.dataset.tab));
+  });
+
+  $("backBtn").addEventListener("click", () => setTab("plans"));
+  $("refreshBtn").addEventListener("click", fetchLiveGameData);
+
+  const backdrop = $("modalBackdrop");
+  $("gamePicker").addEventListener("click", () => backdrop.classList.remove("hidden"));
+  $("closeModal").addEventListener("click", () => backdrop.classList.add("hidden"));
+
+  document.querySelectorAll("[data-game]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      currentGameType = btn.dataset.game;
+      $("gamePicker").textContent = btn.dataset.label + " ▾";
+      backdrop.classList.add("hidden");
+      lastProcessedPeriod = null;
+      if (selectedPredictor && activeTab === "detail") {
+        setTab("plans");
+      }
+      fetchLiveGameData();
+    });
+  });
+
+  function updateTimer() {
+    const duration = GAME_MS[currentGameType] / 1000;
+    const now = Date.now() / 1000;
+    const remaining = Math.floor(duration - (now % duration));
+    const mins = Math.floor(remaining / 60);
+    const secs = remaining % 60;
+    $("timer").textContent = `${String(mins).padStart(2,"0")}:${String(secs).padStart(2,"0")}`;
+  }
+
+  setInterval(updateTimer, 250);
+  fetchLiveGameData();
+  setInterval(fetchLiveGameData, 2000);
+})();
+</script>
+</body>
+</html>
